@@ -1,0 +1,13 @@
+
+(* A+ word alignment ? *)
+
+{$IFNDEF KYLIX}
+{$IFNDEF DELPHI}
+{$PACKRECORDS C}
+{$ENDIF DELPHI}
+{$ENDIF KYLIX}
+
+{$IFDEF FPC}
+{$PACKRECORDS C}
+{$LINKLIB c}
+{$ENDIF FPC}
