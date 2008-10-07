@@ -14,7 +14,7 @@ unit FUSE;
 {$ASSERTIONS ON}
 {$MODE OBJFPC}
 
-{$INCLUDE clinksettings.inc}
+{$PACKRECORDS C}
 
 interface
 uses BaseUNIX, UNIXtype;
