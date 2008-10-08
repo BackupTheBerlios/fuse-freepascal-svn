@@ -27,7 +27,7 @@ type
     function oper_read(aNameC : PChar; aBuffer : Pointer; aBufferSize : size_t; aFileOffset : off_t; aFileInfo : TFileInfoP) : Integer;
   Public
     Constructor Create;
-    Destructor Free;
+    Destructor Destroy; override;
     Function fuse_main: Integer;
   Published
     Property FuseReadDirProc: TFuseReadDirProc read fFuseReadDirProc write fFuseReadDirProc;
@@ -242,9 +242,10 @@ begin
       memcpy(ABuffer, @Buffer, Result)
 end;
 
-Destructor TFuseBinding.Free;
+Destructor TFuseBinding.Destroy;
 Begin
-  FuseGlobalObject := nil
+  FuseGlobalObject := nil;
+  inherited Destroy;
 End;
 
 Function TFuseBinding.fuse_main: Integer;
