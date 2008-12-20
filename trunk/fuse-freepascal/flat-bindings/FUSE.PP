@@ -69,6 +69,7 @@ type
     __ino64_t st_ino;			/* File serial number.		*/
   end;}
   TStatP = ^TStat;
+  TFUSEP = type Pointer;
 
 { beware: use 64-bit stat structs! }
 
@@ -124,7 +125,8 @@ type
     Reserved26 : Cardinal;
     Reserved27 : Cardinal;
   end;
-
+  TConnectionInformationP = ^TConnectionInformation;
+  
   TOperations = record { C }
     getattr     : function(aName : PChar; aSTAT : TStatP) : Integer; cdecl;
     readlink    : function(aName : PChar; aOutLink : PChar; aOutLinkSize: size_t) : Integer; cdecl;
@@ -155,7 +157,7 @@ type
     readdir     : function(aName : PChar; aBuffer : Pointer; aOutEntry : TDirectoryFiller; aFileOffset : off_t; aFileInfo : TFileInfoP) : Integer; cdecl;
     releasedir  : function(aName : PChar; aFileInfo : TFileInfoP) : Integer; cdecl;
     fsyncdir    : function(aName : PChar; aBDataOnly : Integer; aFileInfo : TFileInfoP) : Integer; cdecl;
-    init        : function(aConnectionInfo : TConnectionInformation) : Pointer{UserData}; cdecl;
+    init        : function(aConnectionInfo : TConnectionInformationP) : Pointer{UserData}; cdecl;
     destroy     : procedure(aUserData : Pointer); cdecl;
     access      : function(aName : PChar; aMode : Integer) : Integer; cdecl;
     create      : function(aName : PChar; aMode : TMode; aFileInfo : TFileInfoP) : Integer; cdecl;
@@ -166,8 +168,24 @@ type
     bmap        : function(aName : PChar; aBlockSize : size_t; idx : uint64_t) : Integer; cdecl;
   end;
   TOperationsP = ^TOperations;
-
+  TSessionP = type Pointer; // record;
+  TChannelP = type Pointer;
+  TChannelPP = ^TChannelP;
+  TRequestP = type Pointer; // ^TRequest;
+  
 function fuse_main(aARGC : Integer; aARGV: PPChar; aOperations : TOperationsP; aOperationsSize : size_t; aUserData : Pointer) : Integer;
+
+// if you want to build your own fuse_main, use these:
+
+procedure fuse_session_process(aSession : TSessionP; aBuffer : Pointer; aLength : size_t; aChannel : TChannelP); cdecl;
+function fuse_chan_recv(aChannel : TChannelPP; aBuffer : Pointer; aSize : size_t) : cint; cdecl;
+function fuse_session_exited(aSession : TSessionP) : cint; cdecl;
+procedure fuse_session_reset(aSession : TSessionP); cdecl;
+function fuse_chan_bufsize(aChannel : TChannelP) : size_t; cdecl;
+// before the event loop:
+function fuse_setup(aARGC : cint; aARGV : PPChar; aOperations : TOperationsP; aOperationsSize : size_t; aMountpoint : Pointer{will point to a PChar string}; aMultithreaded : Pcint; aUserData : Pointer) : TFUSEP; cdecl;
+// after the event loop:
+procedure fuse_teardown(aFUSE : TFUSEP; aMountpoint : Pointer{PChar, will be freed by the function}); cdecl;
 
 implementation
 
@@ -181,6 +199,18 @@ begin
   Result := fuse_main_real(aARGC, aARGV, aOperations, aOperationsSize, aUserData);
 end;
 
+procedure fuse_session_process(aSession : TSessionP; aBuffer : Pointer; aLength : size_t; aChannel : TChannelP); cdecl; external FUSELIBFile;
+function fuse_chan_recv(aChannel : TChannelPP; aBuffer : Pointer; aSize : size_t) : cint; cdecl; external FUSELIBFile;
+function fuse_session_exited(aSession : TSessionP) : cint; cdecl; external FUSELIBFile;
+procedure fuse_session_reset(aSession : TSessionP); cdecl; external FUSELIBFile;
+function fuse_chan_bufsize(aChannel : TChannelP) : size_t; cdecl; external FUSELIBFile;
+
+// before the event loop:
+function fuse_setup(aARGC : cint; aARGV : PPChar; aOperations : TOperationsP; aOperationsSize : size_t; aMountpoint : Pointer{will point to a PChar string}; aMultithreaded : Pcint; aUserData : Pointer) : TFUSEP; cdecl; external FUSELIBFile;
+
+// after the event loop:
+procedure fuse_teardown(aFUSE : TFUSEP; aMountpoint : Pointer{PChar, will be freed}); cdecl; external FUSELIBFile;
+
 initialization
   assert(Sizeof(TFileInfo) = 32);
   assert(Sizeof(TOperations) = 152);
@@ -189,5 +219,7 @@ initialization
   assert(Sizeof(TStat) = 96);
   assert(Sizeof(TStatVFS) = 96);
   assert(Sizeof(TFLock) = 24);
-
+  assert(Sizeof(size_t) = 4); // UNIX size_t.
+  assert(Sizeof(TConnectionInformation) = 128);
+  
 end.
