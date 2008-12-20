@@ -177,6 +177,7 @@ function fuse_main(aARGC : Integer; aARGV: PPChar; aOperations : TOperationsP; a
 
 // if you want to build your own fuse_main, use these:
 
+function fuse_get_session(aFUSE : TFUSEP) : TSessionP; cdecl;
 procedure fuse_session_process(aSession : TSessionP; aBuffer : Pointer; aLength : size_t; aChannel : TChannelP); cdecl;
 function fuse_chan_recv(aChannel : TChannelPP; aBuffer : Pointer; aSize : size_t) : cint; cdecl;
 function fuse_session_exited(aSession : TSessionP) : cint; cdecl;
@@ -186,7 +187,7 @@ function fuse_chan_bufsize(aChannel : TChannelP) : size_t; cdecl;
 function fuse_setup(aARGC : cint; aARGV : PPChar; aOperations : TOperationsP; aOperationsSize : size_t; aMountpoint : Pointer{will point to a PChar string}; aMultithreaded : Pcint; aUserData : Pointer) : TFUSEP; cdecl;
 // after the event loop:
 procedure fuse_teardown(aFUSE : TFUSEP; aMountpoint : Pointer{PChar, will be freed by the function}); cdecl;
-
+    
 implementation
 
 const
@@ -198,6 +199,8 @@ function fuse_main(aARGC : Integer; aARGV: PPChar; aOperations : TOperationsP; a
 begin
   Result := fuse_main_real(aARGC, aARGV, aOperations, aOperationsSize, aUserData);
 end;
+
+function fuse_get_session(aFUSE : TFUSEP) : TSessionP; cdecl; external FUSELIBFile;
 
 procedure fuse_session_process(aSession : TSessionP; aBuffer : Pointer; aLength : size_t; aChannel : TChannelP); cdecl; external FUSELIBFile;
 function fuse_chan_recv(aChannel : TChannelPP; aBuffer : Pointer; aSize : size_t) : cint; cdecl; external FUSELIBFile;
