@@ -212,6 +212,8 @@ function fuse_setup(aARGC : cint; aARGV : PPChar; aOperations : TOperationsP; aO
 procedure fuse_teardown(aFUSE : TFUSEP; aMountpoint : Pointer{PChar, will be freed}); cdecl; external FUSELIBFile;
 
 initialization
+
+  // 32 bit X86:
   assert(Sizeof(TFileInfo) = 32);
   assert(Sizeof(TOperations) = 152);
   assert(Sizeof(TFileInfoFlags) = 4);
