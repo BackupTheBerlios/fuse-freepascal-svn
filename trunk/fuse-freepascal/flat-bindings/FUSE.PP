@@ -82,7 +82,7 @@ type
   TFileInfo = record { C }
     flags : Integer;
     fh_old : Cardinal; { unsigned long, don't use. }
-    writepage : LongBool; { bool, sized like cint }
+    BWritepage : LongBool; { bool, sized like cint }
     operationFlags : TFileInfoFlags;
     FH : Int64; { filesystem can fill this }
     LockOwner : Int64;
