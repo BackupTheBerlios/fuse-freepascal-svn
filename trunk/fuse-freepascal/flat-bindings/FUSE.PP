@@ -82,7 +82,7 @@ type
   TFileInfo = record { C }
     flags : Integer;
     fh_old : Cardinal; { unsigned long, don't use. }
-    writepage : Integer; { bool }
+    writepage : LongBool; { bool, sized like cint }
     operationFlags : TFileInfoFlags;
     FH : Int64; { filesystem can fill this }
     LockOwner : Int64;
@@ -226,5 +226,6 @@ initialization
   assert(Sizeof(TFLock) = 24);
   assert(Sizeof(size_t) = 4); // UNIX size_t.
   assert(Sizeof(TConnectionInformation) = 128);
+  assert(Sizeof(LongBool) = 4);
   
 end.
